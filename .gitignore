@@ -1,0 +1,9 @@
+data/
+__pycache__/
+.pytest_cache/
+.venv/
+.miniforge/
+.conda/
+*.egg-info/
+*.pyc
+.env

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CONDA_BIN="$ROOT_DIR/.miniforge/bin/conda"
+ENV_PREFIX="$ROOT_DIR/.conda/envs/smearglepaper"
+
+exec "$CONDA_BIN" run -p "$ENV_PREFIX" python "$@"

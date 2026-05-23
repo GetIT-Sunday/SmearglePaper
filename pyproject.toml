@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smearglepaper"
+version = "0.1.0"
+description = "Turn AI papers into structured Chinese article drafts with PDF parsing, figure extraction, WeChat draft support, and MCP tools."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+  { name = "GetIT-Sunday" }
+]
+keywords = ["arxiv", "papers", "wechat", "mcp", "llm", "research"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "requests>=2.31.0",
+  "PyYAML>=6.0.1",
+  "markdown>=3.6",
+  "pypdf>=4.2.0",
+  "PyMuPDF>=1.24.0",
+  "Pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.9.0"]
+dev = ["pytest>=8.0.0", "mcp>=1.9.0"]
+
+[project.scripts]
+smearglepaper = "smearglepaper.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["smearglepaper*", "mcp_server*"]
