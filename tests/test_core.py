@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import unittest
 
-from smearglepaper.collector import parse_arxiv_feed
+from smearglepaper.collector import parse_arxiv_feed, topic_queries
+from smearglepaper.llm import chat_completions_base_url
 from smearglepaper.models import PaperMeta
 from smearglepaper.ranker import rank_papers
 from smearglepaper.renderer import WechatRenderer
@@ -46,6 +47,15 @@ class CoreTests(unittest.TestCase):
         markdown = append_figures("# Title", ["/tmp/a.png", "/tmp/b.png"])
         self.assertIn("论文图表候选", markdown)
         self.assertIn("](/tmp/a.png)", markdown)
+
+    def test_nlp_topic_presets(self) -> None:
+        queries = topic_queries("nlp_semantics_syntax_pragmatics")
+        self.assertGreaterEqual(len(queries), 3)
+        self.assertTrue(all("cat:cs.CL" in query for query in queries))
+
+    def test_chat_completions_base_url(self) -> None:
+        self.assertEqual(chat_completions_base_url("https://example.com"), "https://example.com/v1")
+        self.assertEqual(chat_completions_base_url("https://example.com/v1"), "https://example.com/v1")
 
 
 if __name__ == "__main__":

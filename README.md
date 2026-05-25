@@ -44,7 +44,7 @@ python -m pip install -e ".[dev]"
 
 ```bash
 smearglepaper preflight
-smearglepaper draft --query "large language model reasoning" --days 30 --top-k 3 --dry-run
+smearglepaper draft --topic nlp_semantics_syntax_pragmatics --days 60 --top-k 3 --dry-run
 ```
 
 Without installing the console script, run:
@@ -70,14 +70,29 @@ data/covers/*.png
 ## CLI Commands
 
 ```bash
+smearglepaper topics
+smearglepaper check-llm
 smearglepaper collect --query "multimodal large language model" --days 7
+smearglepaper collect --topic nlp_semantics --days 60
+smearglepaper collect --topic nlp_syntax --days 60
+smearglepaper collect --topic nlp_pragmatics --days 60
 smearglepaper rank --top-k 5
 smearglepaper read --paper-id 2401.00001
 smearglepaper write --paper-id 2401.00001
 smearglepaper draft --topic latest_ai --dry-run
+smearglepaper draft --topic nlp_semantics_syntax_pragmatics --days 60 --top-k 3 --dry-run
 smearglepaper wechat-publish --article-json data/articles/<paper>.json --draft-only --dry-run
 smearglepaper wechat-update-draft --article-json data/articles/<paper>.json --media-id <media-id> --dry-run
 ```
+
+Built-in NLP topic presets:
+
+- `nlp_semantics`
+- `nlp_syntax`
+- `nlp_pragmatics`
+- `nlp_semantics_syntax_pragmatics`
+
+If arXiv returns `429 Too Many Requests`, wait a few minutes and rerun the same command. SmearglePaper will now show a short rate-limit message instead of a Python traceback.
 
 ## MCP Server
 

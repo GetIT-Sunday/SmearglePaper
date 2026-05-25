@@ -8,6 +8,7 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
+from .collector import ssl_context
 from .config import env
 from .models import Article
 
@@ -122,7 +123,7 @@ class WechatClient:
         if not app_id or not secret:
             raise RuntimeError("WECHAT_APP_ID and WECHAT_APP_SECRET are required for real WeChat calls.")
         query = urllib.parse.urlencode({"grant_type": "client_credential", "appid": app_id, "secret": secret})
-        with urllib.request.urlopen(f"{WECHAT_API}/token?{query}", timeout=30) as response:
+        with urllib.request.urlopen(f"{WECHAT_API}/token?{query}", timeout=30, context=ssl_context()) as response:
             data = json.loads(response.read().decode("utf-8"))
         if "access_token" not in data:
             raise RuntimeError(f"WeChat token failed: {data}")
@@ -135,7 +136,7 @@ class WechatClient:
             headers={"Content-Type": "application/json"},
             method="POST",
         )
-        with urllib.request.urlopen(req, timeout=30) as response:
+        with urllib.request.urlopen(req, timeout=30, context=ssl_context()) as response:
             return json.loads(response.read().decode("utf-8"))
 
     def _post_multipart(self, url: str, field_name: str, path: Path) -> dict[str, object]:
@@ -157,5 +158,5 @@ class WechatClient:
             headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
             method="POST",
         )
-        with urllib.request.urlopen(req, timeout=60) as response:
+        with urllib.request.urlopen(req, timeout=60, context=ssl_context()) as response:
             return json.loads(response.read().decode("utf-8"))

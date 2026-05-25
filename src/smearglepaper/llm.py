@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+from urllib.error import HTTPError
 import urllib.request
 
 from .config import env
+from .collector import ssl_context
 from .models import PaperMeta
 
 
@@ -20,7 +22,7 @@ class ArticleWriter:
         return self._write_locally(paper, context)
 
     def _call_model(self, system: str, user: str, temperature: float) -> str:
-        base = env("OPENAI_BASE_URL").rstrip("/")
+        base = chat_completions_base_url(env("OPENAI_BASE_URL"))
         payload = {
             "model": env("OPENAI_MODEL", "deepseek-chat"),
             "messages": [
@@ -30,12 +32,12 @@ class ArticleWriter:
             "temperature": temperature,
         }
         req = urllib.request.Request(
-            f"{base}/v1/chat/completions",
+            f"{base}/chat/completions",
             data=json.dumps(payload).encode("utf-8"),
             headers={"Authorization": f"Bearer {env('OPENAI_API_KEY')}", "Content-Type": "application/json"},
             method="POST",
         )
-        with urllib.request.urlopen(req, timeout=60) as response:
+        with urllib.request.urlopen(req, timeout=60, context=ssl_context()) as response:
             data = json.loads(response.read().decode("utf-8"))
         return data["choices"][0]["message"]["content"]
 
@@ -105,6 +107,41 @@ def build_context(paper: PaperMeta, parsed: dict[str, object] | None = None) -> 
     if parsed:
         chunks.append(str(parsed.get("text", ""))[:12000])
     return "\n\n".join(chunk for chunk in chunks if chunk).strip()
+
+
+def chat_completions_base_url(base_url: str) -> str:
+    base = base_url.rstrip("/")
+    if base.endswith("/v1"):
+        return base
+    return f"{base}/v1"
+
+
+def check_llm_connection() -> dict[str, object]:
+    base_url = env("OPENAI_BASE_URL")
+    api_key = env("OPENAI_API_KEY")
+    model = env("OPENAI_MODEL", "deepseek-chat")
+    if not base_url or not api_key:
+        return {"ok": False, "model": model, "error": "OPENAI_BASE_URL and OPENAI_API_KEY are required."}
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": "Return OK only."}],
+        "max_tokens": 16,
+    }
+    req = urllib.request.Request(
+        f"{chat_completions_base_url(base_url)}/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30, context=ssl_context()) as response:
+            data = json.loads(response.read().decode("utf-8"))
+        return {"ok": True, "model": model, "status": "connected", "sample": data.get("choices", [{}])[0].get("message", {}).get("content", "")[:80]}
+    except HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        return {"ok": False, "model": model, "status_code": exc.code, "error": body[:500]}
+    except Exception as exc:  # noqa: BLE001 - returned as diagnostic output
+        return {"ok": False, "model": model, "error": f"{type(exc).__name__}: {exc}"}
 
 
 def notes_prompt(paper: PaperMeta, context: str) -> str:

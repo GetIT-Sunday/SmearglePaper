@@ -4,6 +4,7 @@ import urllib.request
 from pathlib import Path
 
 from .config import DATA_DIR
+from .collector import ssl_context
 from .models import PaperMeta
 from .storage import ensure_parent, write_json
 
@@ -29,7 +30,7 @@ class PaperReader:
 
 def download_file(url: str, path: Path, timeout: int = 45) -> None:
     req = urllib.request.Request(url, headers={"User-Agent": "SmearglePaper/0.1"})
-    with urllib.request.urlopen(req, timeout=timeout) as response:
+    with urllib.request.urlopen(req, timeout=timeout, context=ssl_context()) as response:
         path.write_bytes(response.read())
 
 

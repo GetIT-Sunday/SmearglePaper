@@ -29,3 +29,8 @@ Use `--dry-run` while developing:
 smearglepaper draft --query "LLM reasoning" --dry-run
 ```
 
+For NLP semantics, syntax, and pragmatics discovery:
+
+```bash
+smearglepaper draft --topic nlp_semantics_syntax_pragmatics --days 60 --top-k 3 --dry-run
+```
