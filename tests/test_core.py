@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import tempfile
 import unittest
+from pathlib import Path
 
 from smearglepaper.collector import parse_arxiv_feed, topic_queries
 from smearglepaper.llm import chat_completions_base_url
 from smearglepaper.models import PaperMeta
+from smearglepaper.quality import review_article_file
 from smearglepaper.ranker import rank_papers
 from smearglepaper.renderer import WechatRenderer
 from smearglepaper.workflow import append_figures
@@ -56,6 +59,14 @@ class CoreTests(unittest.TestCase):
     def test_chat_completions_base_url(self) -> None:
         self.assertEqual(chat_completions_base_url("https://example.com"), "https://example.com/v1")
         self.assertEqual(chat_completions_base_url("https://example.com/v1"), "https://example.com/v1")
+
+    def test_review_article_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "article.md"
+            path.write_text("# 一个信息量足够的标题\n\n## 一句话结论\n正文\n", encoding="utf-8")
+            report = review_article_file(path)
+            self.assertIn("score", report)
+            self.assertEqual(report["figure_count"], 0)
 
 
 if __name__ == "__main__":

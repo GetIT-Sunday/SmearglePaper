@@ -79,6 +79,7 @@ smearglepaper collect --topic nlp_pragmatics --days 60
 smearglepaper rank --top-k 5
 smearglepaper read --paper-id 2401.00001
 smearglepaper write --paper-id 2401.00001
+smearglepaper review-article data/articles/<paper>.md
 smearglepaper draft --topic latest_ai --dry-run
 smearglepaper draft --topic nlp_semantics_syntax_pragmatics --days 60 --top-k 3 --dry-run
 smearglepaper wechat-publish --article-json data/articles/<paper>.json --draft-only --dry-run

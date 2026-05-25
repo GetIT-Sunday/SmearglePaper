@@ -8,6 +8,7 @@ from .collector import ArxivRateLimitError, ArxivTemporaryError, topic_names
 from .config import DATA_DIR, runtime_settings
 from .llm import check_llm_connection
 from .models import PaperMeta
+from .quality import review_article_file
 from .storage import read_json
 from .wechat import WechatClient
 from .workflow import SmearglePaperWorkflow
@@ -33,6 +34,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     write = sub.add_parser("write", help="Generate a WeChat Markdown and HTML article")
     write.add_argument("--paper-id", required=True)
+
+    review = sub.add_parser("review-article", help="Review a generated article Markdown or JSON file")
+    review.add_argument("path")
 
     draft = sub.add_parser("draft", help="Generate an article and create a local or real WeChat draft")
     draft.add_argument("--topic", default="latest_ai", help=f"Preset topic. Available: {', '.join(topic_names())}")
@@ -98,6 +102,8 @@ def main(argv: list[str] | None = None) -> None:
             paper = _find_paper(args.paper_id)
             parsed_path = DATA_DIR / "parsed" / f"{paper.paper_id.replace('/', '_')}.json"
             _print(workflow.write_article(paper, parsed=read_json(parsed_path, {})))
+        elif args.command == "review-article":
+            _print(review_article_file(Path(args.path)))
         elif args.command == "draft":
             _print(workflow.create_topic_draft(args.topic, args.query, args.paper_url, args.days, args.top_k, args.dry_run))
         elif args.command == "auto-publish":
